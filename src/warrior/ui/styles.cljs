@@ -24,7 +24,18 @@
 
    [:.navigator
     {:display "flex"
+     :align-items "center"
      :min-height "2em"}
+
+    [:.level-badge
+     {:padding "0.25em 0.75em"
+      :font-weight "bold"
+      :white-space "nowrap"
+      :color "#e5e6c7"
+      :background "blue"
+      :border-radius "3px"
+      :margin-right "0.5em"
+      :font-family "monospace"}]
 
     [:input
      {:flex-basis "100%"}]]

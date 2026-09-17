@@ -59,10 +59,21 @@
                    ".png)")}}
      [health-bar-view entity]]))
 
+(defn current-level-id [messages]
+  (or (->> messages
+           (filter (fn [message]
+                     (= :message.type/level-start (:message/type message))))
+           last
+           :message/level
+           :level/id)
+      0))
+
 (defn navigator-view []
-  (let [turn (@state/app-state :turn)
-        turn-count (count (@state/app-state :history))]
+  (let [{:keys [turn history]} @state/app-state
+        turn-count (count history)
+        level-id (current-level-id (get-in history [turn :state/messages]))]
     [:div.navigator
+     [:div.level-badge "Level " level-id]
      [:button {:disabled (= turn 0)
                :on-click (fn []
                            (swap! state/app-state update :turn dec))} "<"]
