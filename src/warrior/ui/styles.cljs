@@ -19,8 +19,9 @@
    {:display "flex"
     :flex-direction "column"
     :height "100vh"
-    :width (str (* 9 64) "px")
-    :overflow "hidden"}
+    :min-width (str (* 11 64) "px")
+    :max-width (str (* 11 64) "px")
+    :width "max-content"}
 
    [:.navigator
     {:display "flex"
@@ -41,10 +42,12 @@
      {:flex-basis "100%"}]]
 
    [:.messages
-    {:overflow "scroll"
+    {:overflow-y "auto"
+     :overflow-x "auto"
      :font-family "monospace"
      :flex-basis "50%"
-     :flex-grow 2}
+     :flex-grow 2
+     :padding "0.5em"}
 
     [:.message
      {:line-height "1.25em"
@@ -98,11 +101,9 @@
       {:font-weight "bold"}]]]
 
    [:.board
-    {:height "64px"
-     :width "100%"
-     :overflow-y "hidden"
-     :overflow-x "auto"
-     :white-space "nowrap"}
+    {:display "flex"
+     :background "black"
+     :height "64px"}
 
     [:.space
      {:display "inline-block"
@@ -183,7 +184,6 @@
 
     [:.app
      {:display "flex"
-      :justify-content "center"
       :height "100vh"}]]])
 
 (defn styles-view []
