@@ -1,6 +1,8 @@
 (ns warrior.ui.views
   (:require
+    [cljs.reader :as edn]
     [reagent.core :as r]
+    [zprint.core :as z]
     [warrior.ui.state :as state]
     [warrior.ui.styles :as styles]))
 
@@ -89,11 +91,28 @@
                :on-click (fn []
                            (swap! state/app-state update :turn inc))} "▶"]]))
 
+(defn format-say-text [text]
+  (try
+    (z/zprint-str (edn/read-string text)
+                  60
+                  {:style [:community :hiccup]
+                   :binding {:force-nl? true}
+                   :set {:sort? true}
+                   :map {:comma? false
+                         :lift-ns? false
+                         :force-nl? true}
+                   :fn-map {"if" :arg1-force-nl
+                            "when" :arg1-force-nl
+                            "fn" :binding
+                            "rcf/tests" :flow-body}})
+    (catch :default _
+      (str text))))
+
 (defn message-view [message attrs]
   (case (:message/type message)
     :message.type/say
     [:div.message.say attrs
-     [:pre (:message/text message)]]
+     [:pre (format-say-text (:message/text message))]]
 
     :message.type/level-start
     (let [level (:message/level message)]

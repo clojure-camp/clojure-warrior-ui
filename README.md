@@ -107,9 +107,9 @@ the board. Example results:
 ;; steps from your warrior to a position
 ;; => 3
 
-(w/say "health:" 20.0)
-;; adds "health: 20.0" to the message log
-;; also sends its argument(s) to tap>
+(w/say {:health 20.0})
+;; adds {:health 20.0} to the message log
+;; also sends its argument to tap>
 ;; (see them in shadow-cljs Inspect at http://localhost:9630/inspect)
 ```
 
