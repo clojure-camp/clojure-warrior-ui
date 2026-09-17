@@ -51,7 +51,15 @@
 
     [:.message
      {:line-height "1.25em"
-      :padding "0 0.5em"}
+      :padding "0 0.5em"
+      :cursor "pointer"}
+
+     [:&.active
+      {:outline "2px solid blue"
+       :outline-offset "0px"}]
+
+     [:&.future
+      {:opacity 0.35}]
 
      [:&.system
       {:white-space "nowrap"}]
@@ -75,7 +83,7 @@
      [:&.level-start
       {:margin "1em 0.5em 0.5em"
        :padding "0.75em 1em"
-       :border-left "3px solid #da4939"
+       :border-left "3px solid blue"
        :background "#fff"
        :white-space "normal"}
 
@@ -99,10 +107,7 @@
        {:color "#666"}
 
        [:summary
-        {:cursor "pointer"}]]]
-
-     [:&:last-child
-      {:font-weight "bold"}]]]
+        {:cursor "pointer"}]]]]]
 
    [:.board
     {:display "flex"

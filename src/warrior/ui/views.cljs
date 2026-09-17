@@ -89,15 +89,15 @@
                :on-click (fn []
                            (swap! state/app-state update :turn inc))} "▶"]]))
 
-(defn message-view [message]
+(defn message-view [message attrs]
   (case (:message/type message)
     :message.type/say
-    [:div.message.say
+    [:div.message.say attrs
      [:pre (:message/text message)]]
 
     :message.type/level-start
     (let [level (:message/level message)]
-      [:div.message.level-start
+      [:div.message.level-start attrs
        [:div.title "Level " (:level/id level)]
        [:div.description (:level/description level)]
        (when-let [tip (:level/tip level)]
@@ -110,36 +110,55 @@
           clue])])
 
     :message.type/enemy-action
-    [:div.message.enemy-action
+    [:div.message.enemy-action attrs
      (:message/text message)]
 
-    [:div.message.system
+    [:div.message.system attrs
      (:message/text message)]))
 
-(defn scroll-to-bottom! [element]
-  (when element
-    (set! (.-scrollTop element) (.-scrollHeight element))))
+(defn message-count-at-turn [history turn]
+  (count (get-in history [turn :state/messages])))
 
-(defn messages-view [_messages]
+(defn turn-for-message [history message-index]
+  (->> history
+       (keep-indexed (fn [turn _state]
+                       (when (> (message-count-at-turn history turn) message-index)
+                         turn)))
+       first))
+
+(defn scroll-active-message-into-view! [element]
+  (when-let [active (some-> element (.querySelector ".message.active"))]
+    (.scrollIntoView active #js {:block "nearest"})))
+
+(defn messages-view []
   (let [element (atom nil)]
     (r/create-class
       {:component-did-mount
        (fn []
-         (scroll-to-bottom! @element))
+         (scroll-active-message-into-view! @element))
        :component-did-update
        (fn []
-         (scroll-to-bottom! @element))
+         (scroll-active-message-into-view! @element))
        :reagent-render
-       (fn [messages]
-         [:div.messages
-          {:ref (fn [el]
-                  (when el
-                    (reset! element el)))}
-          (map-indexed
-            (fn [index message]
-              ^{:key index}
-              [message-view message])
-            messages)])})))
+       (fn []
+         (let [{:keys [history turn]} @state/app-state
+               all-messages (get-in history [(dec (count history)) :state/messages])
+               active-index (dec (message-count-at-turn history turn))]
+           [:div.messages
+            {:ref (fn [el]
+                    (when el
+                      (reset! element el)))}
+            (map-indexed
+              (fn [index message]
+                ^{:key index}
+                [message-view message
+                 {:class (cond
+                           (= index active-index) "active"
+                           (> index active-index) "future")
+                  :on-click (fn []
+                              (swap! state/app-state assoc :turn
+                                     (turn-for-message history index)))}])
+              all-messages)]))})))
 
 (defn board-view [board]
   (into [:div.board]
@@ -161,7 +180,7 @@
       [:div.level
        [navigator-view]
        [board-view (get-in history [turn :state/board])]
-       [messages-view (get-in history [turn :state/messages])]]
+       [messages-view]]
       [:div.level])))
 
 (defn app-view []
