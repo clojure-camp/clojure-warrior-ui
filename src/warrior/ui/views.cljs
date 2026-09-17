@@ -76,7 +76,7 @@
      [:div.level-badge "Level " level-id]
      [:button {:disabled (= turn 0)
                :on-click (fn []
-                           (swap! state/app-state update :turn dec))} "<"]
+                           (swap! state/app-state update :turn dec))} "◀"]
      [:input {:type "range"
               :min 0
               :max (dec turn-count)
@@ -87,7 +87,7 @@
                                   (js/parseInt (.. e -target -value) 10)))}]
      [:button {:disabled (= turn (dec turn-count))
                :on-click (fn []
-                           (swap! state/app-state update :turn inc))} ">"]]))
+                           (swap! state/app-state update :turn inc))} "▶"]]))
 
 (defn message-view [message]
   (case (:message/type message)
