@@ -2,18 +2,6 @@
   (:require
     [garden.core :as garden]))
 
-(defn error-styles []
-  [:.error
-   {:position "fixed"
-    :top 0
-    :left 0
-    :right 0
-    :z-index 1000
-    :padding "0.75em 1em"
-    :color "white"
-    :font-family "monospace"
-    :background "#da4939"}])
-
 (defn level-styles []
   [:.level
    {:display "flex"
@@ -67,6 +55,11 @@
      [:&.enemy-action
       {:white-space "nowrap"
        :color "#da4939"}]
+
+     [:&.error
+      {:white-space "pre-wrap"
+       :color "#da4939"
+       :font-weight "bold"}]
 
      [:&.say
       {:padding "0.75em 1em"
@@ -201,5 +194,4 @@
     :dangerouslySetInnerHTML
     {:__html (garden/css
                (main-styles)
-               (error-styles)
                (level-styles))}}])

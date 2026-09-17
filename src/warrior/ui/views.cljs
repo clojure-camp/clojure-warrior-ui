@@ -132,6 +132,10 @@
     [:div.message.enemy-action attrs
      (:message/text message)]
 
+    :message.type/error
+    [:div.message.error attrs
+     (:message/text message)]
+
     [:div.message.system attrs
      (:message/text message)]))
 
@@ -189,10 +193,6 @@
                   [:div.space
                    [entity-view entity]])))))
 
-(defn error-view []
-  (when-let [error (@state/app-state :error)]
-    [:div.error error]))
-
 (defn level-view []
   (let [{:keys [history turn]} @state/app-state]
     (if (seq history)
@@ -205,5 +205,4 @@
 (defn app-view []
   [:div.app
    [styles/styles-view]
-   [error-view]
    [level-view]])
