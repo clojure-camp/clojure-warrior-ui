@@ -1,0 +1,156 @@
+(ns warrior.ui.views
+  (:require
+    [reagent.core :as r]
+    [warrior.ui.state :as state]
+    [warrior.ui.styles :as styles]))
+
+(defn health-bar-view [entity]
+  (when (entity :unit/max-health)
+    [:div.health-bar
+     {:style {:width (* 2 (entity :unit/max-health))}}
+     [:div.health
+      {:style {:width (* 2 (entity :unit/health))}
+       :class (cond
+                (< (entity :unit/health) 5) "low"
+                (< (entity :unit/health) 10) "medium"
+                :else "high")}]]))
+
+(defn annotate-entity [entity]
+  (cond
+    (= 0 (:unit/health entity))
+    (assoc entity :state :dead)
+
+    (:unit/at-stairs entity)
+    (assoc entity :state :walk-stairs)
+
+    (:unit/rescued? entity)
+    (assoc entity :state :free
+                  :unit/type :unit.type/captive)
+
+    (contains? #{:action/walk :action/attack :action/shoot :action/rest :action/rescue}
+               (first (:unit/action entity)))
+    (assoc entity :state (first (:unit/action entity)))
+
+    (contains? #{:unit.type/warrior
+                 :unit.type/sludge
+                 :unit.type/thick-sludge
+                 :unit.type/archer
+                 :unit.type/wizard
+                 :unit.type/captive}
+               (:unit/type entity))
+    (assoc entity :state :base)
+
+    :else
+    entity))
+
+(defn entity-view [entity]
+  (let [entity (annotate-entity entity)]
+    [:div.sprite
+     {:class (str (name (:unit/type entity)) " "
+                  (name (or (:state entity) :nil)) " "
+                  (when (:unit/enemy? entity) "enemy") " "
+                  (when (:unit/direction entity)
+                    (name (:unit/direction entity))))
+      :style {:background-image
+              (str "url(./sprites/"
+                   (name (:unit/type entity))
+                   (when (:state entity)
+                     (str "_" (name (:state entity))))
+                   ".png)")}}
+     [health-bar-view entity]]))
+
+(defn navigator-view []
+  (let [turn (@state/app-state :turn)
+        turn-count (count (@state/app-state :history))]
+    [:div.navigator
+     [:button {:disabled (= turn 0)
+               :on-click (fn []
+                           (swap! state/app-state update :turn dec))} "<"]
+     [:input {:type "range"
+              :min 0
+              :max (dec turn-count)
+              :step 1
+              :value turn
+              :on-change (fn [e]
+                           (swap! state/app-state assoc :turn
+                                  (js/parseInt (.. e -target -value) 10)))}]
+     [:button {:disabled (= turn (dec turn-count))
+               :on-click (fn []
+                           (swap! state/app-state update :turn inc))} ">"]]))
+
+(defn message-view [message]
+  (case (:message/type message)
+    :message.type/say
+    [:div.message.say
+     [:pre (:message/text message)]]
+
+    :message.type/level-start
+    (let [level (:message/level message)]
+      [:div.message.level-start
+       [:div.title "Level " (:level/id level)]
+       [:div.description (:level/description level)]
+       (when-let [tip (:level/tip level)]
+         [:div.tip
+          [:span.label "Tip: "]
+          tip])
+       (when-let [clue (:level/clue level)]
+         [:details.clue
+          [:summary "Show clue"]
+          clue])])
+
+    [:div.message.system
+     (:message/text message)]))
+
+(defn scroll-to-bottom! [element]
+  (when element
+    (set! (.-scrollTop element) (.-scrollHeight element))))
+
+(defn messages-view [_messages]
+  (let [element (atom nil)]
+    (r/create-class
+      {:component-did-mount
+       (fn []
+         (scroll-to-bottom! @element))
+       :component-did-update
+       (fn []
+         (scroll-to-bottom! @element))
+       :reagent-render
+       (fn [messages]
+         [:div.messages
+          {:ref (fn [el]
+                  (when el
+                    (reset! element el)))}
+          (map-indexed
+            (fn [index message]
+              ^{:key index}
+              [message-view message])
+            messages)])})))
+
+(defn board-view [board]
+  (into [:div.board]
+        (for [row board]
+          (into [:div.row]
+                (for [entity (-> row
+                                 ;; remove walls at leftmost and rightmost
+                                 rest butlast)]
+                  [:div.space
+                   [entity-view entity]])))))
+
+(defn error-view []
+  (when-let [error (@state/app-state :error)]
+    [:div.error error]))
+
+(defn level-view []
+  (let [{:keys [history turn]} @state/app-state]
+    (if (seq history)
+      [:div.level
+       [navigator-view]
+       [board-view (get-in history [turn :state/board])]
+       [messages-view (get-in history [turn :state/messages])]]
+      [:div.level])))
+
+(defn app-view []
+  [:div.app
+   [styles/styles-view]
+   [error-view]
+   [level-view]])
