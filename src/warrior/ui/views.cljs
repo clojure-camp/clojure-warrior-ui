@@ -109,6 +109,10 @@
           [:summary "Show clue"]
           clue])])
 
+    :message.type/enemy-action
+    [:div.message.enemy-action
+     (:message/text message)]
+
     [:div.message.system
      (:message/text message)]))
 

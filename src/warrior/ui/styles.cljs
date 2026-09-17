@@ -56,6 +56,10 @@
      [:&.system
       {:white-space "nowrap"}]
 
+     [:&.enemy-action
+      {:white-space "nowrap"
+       :color "#da4939"}]
+
      [:&.say
       {:padding "0.75em 1em"
        :border-radius "3px"
