@@ -1,34 +1,64 @@
 # Clojure Warrior
 
-Write a bot in your own IDE, watch it climb the tower in the browser.
+Play Clojure Warrior (port of Ruby Warrior) with your own IDE and browser.
 
 ## Run
 
+After cloning this repo...
+
+### VS Code + Calva
+
+- `REPL ⚡`
+- `Start your project with a REPL and connect`
+- Project type: `shadow-cljs`
+- Builds to start: `:app`
+- (wait)
+- Build to connect to: `:app`
+- Open `http://localhost:8080`
+- Open `src/warrior/bot.cljs`, edit and save the file to run the bot.
+
+### Generic
+
 ```sh
 npm install
-npx shadow-cljs watch app
+npm start
 ```
 
 Open http://localhost:8080
 
-Edit `src/warrior/bot.cljs` and save.
+Open `src/warrior/bot.cljs`, edit and save the file to run the bot.
 
-## Actions
+### Other
+
+For other editors, see [shadow-cljs' documentation](https://shadow-cljs.github.io/docs/UsersGuide.html#_editor_integration)
+
+## How to Play
+
+### Your Bot
+
+Edit `play-turn` in `src/warrior/bot.cljs`:
+
+```clojure
+(defn play-turn [board]
+  [])
+```
 
 `play-turn` receives the board and must return one action per turn:
 
 ```clojure
 [:action/walk :direction/forward]     ; move one space
 [:action/attack :direction/forward]   ; attack the adjacent unit (backward attacks at half power)
-[:action/shoot :direction/forward]    ; shoot the first unit within 2 spaces
-[:action/rescue :direction/forward]   ; free an adjacent captive
 [:action/rest]                        ; regain 10% of max health
+[:action/rescue :direction/forward]   ; free an adjacent captive
 [:action/pivot]                       ; turn around
+[:action/shoot :direction/forward]    ; shoot the first unit within 2 spaces
 ```
 
 Directions are `:direction/forward` or `:direction/backward`.
 
-## The Board
+The first level only starts with `:action/walk` unlocked, and other actions are unlocked as you progress through the levels.
+
+### The Board
 
 The board is a vector of rows, and each space in a row is a map:
 
@@ -52,10 +82,7 @@ The board is a vector of rows, and each space in a row is a map:
   {:unit/type :unit.type/wall}]]
 ```
 
-## Reading the Board
-
-`clojure-warrior.api` (required as `w` in `bot.cljs`) has functions to read
-the board. Example results:
+...but you will rarely need to work with this list directly. There are many helper functions (in `clojure-warrior.api`, required as `w` in `bot.cljs`)
 
 ```clojure
 (w/warrior board)
@@ -113,7 +140,7 @@ the board. Example results:
 ;; (see them in shadow-cljs Inspect at http://localhost:9630/inspect)
 ```
 
-## Keeping State Between Turns
+### Keeping State Between Turns
 
 `play-turn` is a pure function of the board, so use an atom when you need to
 remember something from previous turns (for example, your health last turn):
