@@ -71,42 +71,71 @@
       0))
 
 (defn navigator-view []
-  (let [{:keys [turn history]} @state/app-state
-        turn-count (count history)
-        level-id (current-level-id (get-in history [turn :state/messages]))]
+  (let [{:keys [index history]} @state/app-state
+        state-count (count history)
+        current-state (get history index)
+        level-id (current-level-id (:state/messages current-state))]
     [:div.navigator
-     [:div.level-badge "Level " level-id]
-     [:button {:disabled (= turn 0)
+     [:div.level-badge "Level " level-id " · Turn " (:state/turn current-state)]
+     [:button {:disabled (= index 0)
                :on-click (fn []
-                           (swap! state/app-state update :turn dec))} "◀"]
+                           (swap! state/app-state update :index dec))} "◀"]
      [:input {:type "range"
               :min 0
-              :max (dec turn-count)
+              :max (dec state-count)
               :step 1
-              :value turn
+              :value index
               :on-change (fn [e]
-                           (swap! state/app-state assoc :turn
+                           (swap! state/app-state assoc :index
                                   (js/parseInt (.. e -target -value) 10)))}]
-     [:button {:disabled (= turn (dec turn-count))
+     [:button {:disabled (= index (dec state-count))
                :on-click (fn []
-                           (swap! state/app-state update :turn inc))} "▶"]]))
+                           (swap! state/app-state update :index inc))} "▶"]]))
+
+(def zprint-options
+  {:style [:community :hiccup]
+   :binding {:force-nl? true}
+   :set {:sort? true}
+   :map {:comma? false
+         :lift-ns? false
+         :force-nl? true}
+   :fn-map {"if" :arg1-force-nl
+            "when" :arg1-force-nl
+            "fn" :binding
+            "rcf/tests" :flow-body}})
+
+(defn format-edn [value]
+  (z/zprint-str value 60 zprint-options))
 
 (defn format-say-text [text]
   (try
-    (z/zprint-str (edn/read-string text)
-                  60
-                  {:style [:community :hiccup]
-                   :binding {:force-nl? true}
-                   :set {:sort? true}
-                   :map {:comma? false
-                         :lift-ns? false
-                         :force-nl? true}
-                   :fn-map {"if" :arg1-force-nl
-                            "when" :arg1-force-nl
-                            "fn" :binding
-                            "rcf/tests" :flow-body}})
+    (format-edn (edn/read-string text))
     (catch :default _
       (str text))))
+
+(def debug-message-types
+  #{:message.type/input
+    :message.type/say
+    :message.type/warrior-action})
+
+(defn debug-columns-view [messages]
+  (let [{inputs :message.type/input
+         says :message.type/say
+         outputs :message.type/warrior-action} (group-by :message/type messages)]
+    [:div.debug-columns
+     [:div.column
+      [:div.label "input"]
+      [:pre (format-edn (:message/board (first inputs)))]]
+     (when (seq says)
+       [:div.column
+        [:div.label "say"]
+        (for [[index say] (map-indexed vector says)]
+          ^{:key index}
+          [:pre (format-say-text (:message/text say))])])
+     [:div.column
+      [:div.label "output"]
+      (when-let [output (first outputs)]
+        [:pre (pr-str (:message/action output))])]]))
 
 (defn message-view [message attrs]
   (case (:message/type message)
@@ -139,15 +168,51 @@
     [:div.message.system attrs
      (:message/text message)]))
 
-(defn message-count-at-turn [history turn]
-  (count (get-in history [turn :state/messages])))
+(defn message-count-at-index [history index]
+  (count (get-in history [index :state/messages])))
 
-(defn turn-for-message [history message-index]
+(defn index-for-message [history message-index]
   (->> history
-       (keep-indexed (fn [turn _state]
-                       (when (> (message-count-at-turn history turn) message-index)
-                         turn)))
+       (keep-indexed (fn [index _state]
+                       (when (> (message-count-at-index history index) message-index)
+                         index)))
        first))
+
+(defn turn-view [indexed-messages active-index history]
+  (r/with-let [debug-open? (r/atom false)]
+    (let [turn (:message/turn (second (first indexed-messages)))
+          {debug-messages true
+           log-messages false} (group-by (fn [[_index message]]
+                                           (contains? debug-message-types (:message/type message)))
+                                         indexed-messages)
+          debug-future? (and (seq debug-messages)
+                             (> (first (first debug-messages)) active-index))]
+      [:div.turn
+       (when (or (pos? turn)
+                 (seq debug-messages))
+         [:div.turn-header
+          (when (pos? turn)
+            [:span.turn-label turn])
+          (when (seq debug-messages)
+            [:span.debug-toggle
+             {:class (when debug-future? "future")
+              :on-click (fn []
+                          (swap! debug-open? not))}
+             (if @debug-open?
+               "▾ debug"
+               "▸ debug")])])
+       (when (and @debug-open?
+                  (seq debug-messages))
+         [debug-columns-view (map second debug-messages)])
+       (for [[index message] log-messages]
+         ^{:key index}
+         [message-view message
+          {:class (cond
+                    (= index active-index) "active"
+                    (> index active-index) "future")
+           :on-click (fn []
+                       (swap! state/app-state assoc :index
+                              (index-for-message history index)))}])])))
 
 (defn scroll-active-message-into-view! [element]
   (when-let [active (some-> element (.querySelector ".message.active"))]
@@ -164,24 +229,21 @@
          (scroll-active-message-into-view! @element))
        :reagent-render
        (fn []
-         (let [{:keys [history turn]} @state/app-state
+         (let [{:keys [history index]} @state/app-state
                all-messages (get-in history [(dec (count history)) :state/messages])
-               active-index (dec (message-count-at-turn history turn))]
+               active-index (dec (message-count-at-index history index))]
            [:div.messages
             {:ref (fn [el]
                     (when el
                       (reset! element el)))}
-            (map-indexed
-              (fn [index message]
-                ^{:key index}
-                [message-view message
-                 {:class (cond
-                           (= index active-index) "active"
-                           (> index active-index) "future")
-                  :on-click (fn []
-                              (swap! state/app-state assoc :turn
-                                     (turn-for-message history index)))}])
-              all-messages)]))})))
+            (->> all-messages
+                 (map-indexed vector)
+                 (partition-by (fn [[_index message]]
+                                 (:message/turn message)))
+                 (map (fn [indexed-messages]
+                        (let [turn (:message/turn (second (first indexed-messages)))]
+                          ^{:key turn}
+                          [turn-view indexed-messages active-index history]))))]))})))
 
 (defn board-view [board]
   (into [:div.board]
@@ -194,11 +256,11 @@
                    [entity-view entity]])))))
 
 (defn level-view []
-  (let [{:keys [history turn]} @state/app-state]
+  (let [{:keys [history index]} @state/app-state]
     (if (seq history)
       [:div.level
        [navigator-view]
-       [board-view (get-in history [turn :state/board])]
+       [board-view (get-in history [index :state/board])]
        [messages-view]]
       [:div.level])))
 

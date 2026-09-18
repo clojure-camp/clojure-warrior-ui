@@ -37,6 +37,48 @@
      :flex-grow 2
      :padding "0.5em"}
 
+    [:.turn
+     {:margin-top "0.75em"
+      :padding-top "0.25em"
+      :border-top "1px solid #ccc"}
+
+     [:.turn-header
+      {:display "flex"
+       :gap "1em"
+       :padding "0 0.5em"
+       :margin-bottom "0.5em"
+       :font-size "0.8em"
+       :color "#999"}
+
+      [:.debug-toggle
+       {:color "#666"
+        :cursor "pointer"}
+
+       [:&.future
+        {:opacity 0.35}]]]
+
+     [:.debug-columns
+      {:display "flex"
+       :gap "1em"
+       :margin "0.25em 0.5em 0.5em"
+       :padding "0.5em"
+       :border-radius "3px"
+       :color "#fff"
+       :background "#000"
+       :overflow-x "auto"}
+
+      [:.column
+       {:flex "0 0 auto"}
+
+       [:.label
+        {:color "#999"
+         :font-size "0.8em"
+         :margin-bottom "0.25em"}]
+
+       [:pre
+        {:margin "0 0 0.25em"
+         :white-space "pre"}]]]]
+
     [:.message
      {:line-height "1.25em"
       :padding "0 0.5em"

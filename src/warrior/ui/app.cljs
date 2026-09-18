@@ -8,10 +8,12 @@
     [warrior.ui.views :as views]))
 
 (defn error-history [error]
-  [{:state/messages [{:message/type :message.type/error
+  [{:state/turn 0
+    :state/messages [{:message/type :message.type/error
                       :message/text (str "Error while running your bot: "
                                          (or (ex-message error)
-                                             (str error)))}]}])
+                                             (str error)))
+                      :message/turn 0}]}])
 
 (defn run-bot! []
   (let [history (try
@@ -21,7 +23,7 @@
                     (error-history error)))]
     (swap! state/app-state assoc
            :history history
-           :turn (dec (count history)))))
+           :index (dec (count history)))))
 
 (defonce root
   (rdom/create-root (.. js/document (getElementById "app"))))

@@ -4,4 +4,4 @@
 
 (defonce app-state
   (r/atom {:history []
-           :turn 0}))
+           :index 0}))
