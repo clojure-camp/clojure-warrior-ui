@@ -2,6 +2,7 @@
   "name": "clojure-warrior",
   "private": true,
   "scripts": {
+    "start": "shadow-cljs watch app",
     "dev": "shadow-cljs -A:dev watch app"
   },
   "devDependencies": {
