@@ -100,7 +100,9 @@
 
      [:&.error
       {:white-space "pre-wrap"
-       :color "#da4939"
+       :color "white"
+       :padding "0.5em"
+       :background "#da4939"
        :font-weight "bold"}]
 
      [:&.say
