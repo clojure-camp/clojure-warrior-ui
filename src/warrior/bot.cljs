@@ -7,6 +7,5 @@
 
 (defn play-turn [board]
   (w/say {:health (:unit/health (w/warrior board))})
-  (if (:unit/enemy? (w/feel board :direction/forward))
-    [:action/attack :direction/forward]
-    [:action/walk :direction/forward]))
+  ;; What should we do?
+  [])
