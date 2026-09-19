@@ -1,9 +1,8 @@
-(ns warrior.ui.app
+(ns warrior.editor.core
   (:require
     [reagent.dom.client :as rdom]
-    [warrior.bot :as bot]
-    [warrior.ui.game :as game]
-    [warrior.ui.views :as views]))
+    [warrior.editor.state :as state]
+    [warrior.editor.views :as views]))
 
 (defonce root
   (rdom/create-root (.. js/document (getElementById "app"))))
@@ -12,9 +11,9 @@
   (rdom/render root [views/app-view]))
 
 (defn init! []
-  (game/run-bot! bot/play-turn)
-  (render!))
+  (state/init-code!)
+  (render!)
+  (state/run-code!))
 
 (defn reload! []
-  (game/run-bot! bot/play-turn)
   (render!))

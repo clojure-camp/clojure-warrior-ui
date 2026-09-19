@@ -156,6 +156,25 @@ remember something from previous turns (for example, your health last turn):
     ...))
 ```
 
+## Editor (browser only)
+
+The `editor` build adds a CodeMirror editor next to the game, so a bot can be
+written and run entirely in the browser (code is evaluated with SCI). Code is
+saved in localStorage; the Share button puts it in the URL.
+
+```sh
+npm run editor
+```
+
+Open http://localhost:8081
+
+To build a static site into `public/editor`:
+
+```sh
+npm run release:editor
+cp -RL public/editor <deploy-dir>   # -L copies the sprites symlink as files
+```
+
 ## Development
 
 To run the app with bot in `dev-src/warrior/bot.cljs` instead of `src/warrior/bot.cljs`:

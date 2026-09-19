@@ -1,8 +1,15 @@
 {:deps true
  :dev-http {8080 {:root "public"
-                  :push-state/index "index.html"}}
+                  :push-state/index "index.html"}
+            8081 {:root "public/editor"}}
  :builds {:app {:target :browser
                 :output-dir "public/js"
                 :asset-path "/js"
                 :modules {:main {:init-fn warrior.ui.app/init!}}
-                :devtools {:after-load warrior.ui.app/reload!}}}}
+                :devtools {:after-load warrior.ui.app/reload!}}
+          :editor {:target :browser
+                   :output-dir "public/editor/js"
+                   :asset-path "/js"
+                   :modules {:main {:init-fn warrior.editor.core/init!}}
+                   :devtools {:after-load warrior.editor.core/reload!}
+                   :compiler-options {:infer-externs :auto}}}}
