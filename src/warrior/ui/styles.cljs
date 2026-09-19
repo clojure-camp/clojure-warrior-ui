@@ -80,8 +80,7 @@
      :font-size "0.8em"}
 
     [:.debug-toggle
-     {
-      :padding "0.25em 0.5em"
+     {:padding "0.25em 0.5em"
       :cursor "pointer"}
 
      [:&.empty
@@ -147,12 +146,10 @@
      [:&.future
       {:opacity 0.35}]
 
-     [:&.system
-      {:white-space "nowrap"}]
+     [:&.system]
 
      [:&.enemy-action
-      {:white-space "nowrap"
-       :color "#da4939"}]
+      {:color "#da4939"}]
 
      [:&.error
       {:white-space "pre-wrap"
