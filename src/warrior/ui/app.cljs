@@ -23,7 +23,8 @@
                     (error-history error)))]
     (swap! state/app-state assoc
            :history history
-           :index (dec (count history)))))
+           :index 0)
+    (state/start-playback!)))
 
 (defonce root
   (rdom/create-root (.. js/document (getElementById "app"))))

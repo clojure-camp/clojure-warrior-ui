@@ -27,7 +27,10 @@
       :font-family "monospace"}]
 
     [:input
-     {:flex-basis "100%"}]]
+     {:flex-basis "100%"}]
+
+    [:.play-toggle
+     {:margin-left "0.5em"}]]
 
    [:.debug
     {:font-family "monospace"
@@ -118,6 +121,7 @@
       {:white-space "pre-wrap"
        :color "white"
        :padding "0.5em"
+       :margin "-0.5em 0"
        :background "#da4939"
        :font-weight "bold"}]
 

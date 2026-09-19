@@ -71,7 +71,7 @@
       0))
 
 (defn navigator-view []
-  (let [{:keys [index history]} @state/app-state
+  (let [{:keys [index history playing?]} @state/app-state
         state-count (count history)
         current-state (get history index)
         level-id (current-level-id (:state/messages current-state))]
@@ -90,7 +90,12 @@
                                   (js/parseInt (.. e -target -value) 10)))}]
      [:button {:disabled (= index (dec state-count))
                :on-click (fn []
-                           (swap! state/app-state update :index inc))} "▶"]]))
+                           (swap! state/app-state update :index inc))} "▶"]
+     [:button.play-toggle {:on-click (fn []
+                                       (state/toggle-playback!))}
+      (if playing?
+        "⏸"
+        "⏵")]]))
 
 (def zprint-options
   {:style [:community :hiccup]
