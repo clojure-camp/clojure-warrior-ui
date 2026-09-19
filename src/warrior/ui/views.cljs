@@ -212,8 +212,6 @@
       [:div.message.level-start attrs
        [:div.title "Level " (:level/id level)]
        [:div.description (:level/description level)]
-       (when-let [ace-score (:level/ace-score level)]
-         [:div.ace-score "Ace score: " ace-score])
        (when-let [tip (:level/tip level)]
          [:details.tip
           [:summary "Show Tip"]
@@ -234,7 +232,55 @@
     [:div.message.system attrs
      (display-text message)]))
 
-(defn level-score-view [score total-score attrs]
+(defn grade-letter [ratio]
+  (cond
+    (>= ratio 1.0) "S"
+    (>= ratio 0.9) "A"
+    (>= ratio 0.8) "B"
+    (>= ratio 0.7) "C"
+    (>= ratio 0.6) "D"
+    :else "F"))
+
+(defn level-results [all-messages]
+  (:results
+    (reduce (fn [{:keys [level results]} [index message]]
+              (case (:message/type message)
+                :message.type/level-start
+                {:level (:message/level message)
+                 :results results}
+
+                :message.type/level-score
+                {:level level
+                 :results (conj results
+                                {:result/message-index index
+                                 :result/level-id (:level/id level)
+                                 :result/ace-score (:level/ace-score level)
+                                 :result/ratio (when (pos? (:level/ace-score level 0))
+                                                 (/ (:score/total (:message/score message))
+                                                    (:level/ace-score level)))})}
+
+                {:level level
+                 :results results}))
+            {:level nil
+             :results []}
+            (map-indexed vector all-messages))))
+
+(defn level-result-for-message-index [all-messages message-index]
+  (->> (level-results all-messages)
+       (filter (fn [result]
+                 (= message-index (:result/message-index result))))
+       first))
+
+(defn grade-badge-view [result]
+  (when-let [ratio (:result/ratio result)]
+    (let [grade (grade-letter ratio)]
+      [:span.grade-badge
+       {:class (str "grade-" grade)
+        :title (when-let [ace-score (:result/ace-score result)]
+                 (str "Ace Score: " ace-score))}
+       grade])))
+
+(defn level-score-view [score total-score result attrs]
   [:div.message.level-score attrs
    [:div.title "Level Complete"]
    [:table
@@ -251,7 +297,8 @@
         [:td.value (:score/clear-bonus score)]])
      [:tr.level-total
       [:td "Level Score"]
-      [:td.value (:score/total score)]]
+      [:td.value (:score/total score)]
+      [:td.grade [grade-badge-view result]]]
      [:tr.total
       [:td "Total Score"]
       [:td.value total-score]]]]])
@@ -279,7 +326,8 @@
           score-tally-text-prefixes)))
 
 (defn turn-view [indexed-messages active-index history]
-  (let [turn (:message/turn (second (first indexed-messages)))
+  (let [all-messages (get-in history [(dec (count history)) :state/messages])
+        turn (:message/turn (second (first indexed-messages)))
         log-messages (remove (fn [[_index message]]
                                (or
                                  (contains? debug-message-types (:message/type message))
@@ -302,6 +350,7 @@
               [level-score-view
                (:message/score message)
                (get-in history [(index-for-message history index) :state/score])
+               (level-result-for-message-index all-messages index)
                attrs]
               [message-view message attrs])
             {:key index})))]]))
@@ -309,6 +358,32 @@
 (defn scroll-active-message-into-view! [element]
   (when-let [active (some-> element (.querySelector ".message.active"))]
     (.scrollIntoView active #js {:block "nearest"})))
+
+(defn escaped? [history index]
+  (let [current-state (get history index)]
+    (and
+      (= index (dec (count history)))
+      (some? (:state/board current-state))
+      (not (:state/game-over? current-state)))))
+
+(defn tower-grade-view [all-messages attrs]
+  (let [results (level-results all-messages)
+        ratios (keep :result/ratio results)
+        average (when (seq ratios)
+                  (/ (reduce + ratios) (count ratios)))]
+    (when average
+      [:div.message.tower-grade attrs
+       [:div.title "Tower Grade"]
+       [:table
+        [:tbody
+         (for [result results]
+           ^{:key (:result/level-id result)}
+           [:tr
+            [:td "Level " (:result/level-id result)]
+            [:td.grade [grade-badge-view result]]])
+         [:tr.average
+          [:td "Average"]
+          [:td.grade [grade-badge-view {:result/ratio average}]]]]]])))
 
 (defn messages-view []
   (let [element (atom nil)]
@@ -335,7 +410,14 @@
                  (map (fn [indexed-messages]
                         (let [turn (:message/turn (second (first indexed-messages)))]
                           ^{:key turn}
-                          [turn-view indexed-messages active-index history]))))]))})))
+                          [turn-view indexed-messages active-index history]))))
+            (when (escaped? history (dec (count history)))
+              [:div.turn
+               [:div.turn-label]
+               [:div.turn-messages
+                [tower-grade-view all-messages
+                 {:class (when (< index (dec (count history)))
+                           "future")}]]])]))})))
 
 (defn board-view [board]
   (into [:div.board]
@@ -351,13 +433,6 @@
   [:div.board.escaped
    [:div.space
     [entity-view {:unit/type :unit.type/warrior}]]])
-
-(defn escaped? [history index]
-  (let [current-state (get history index)]
-    (and
-      (= index (dec (count history)))
-      (some? (:state/board current-state))
-      (not (:state/game-over? current-state)))))
 
 (defn level-view []
   (let [{:keys [history index]} @state/app-state]

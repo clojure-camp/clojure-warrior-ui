@@ -190,10 +190,6 @@
       [:.description
        {:margin-bottom "0.5em"}]
 
-      [:.ace-score
-       {:margin-bottom "0.5em"
-        :color "#666"}]
-
       [:.tip
        {:margin-bottom "0.25em"}]
 
@@ -229,6 +225,9 @@
         {:text-align "right"
          :padding-left "1.5em"}]
 
+       [:td.grade
+        {:padding "0.1em 0 0.1em 0.5em"}]
+
        [:tr.level-total
         [:td
          {:border-top "1px solid #ccc"
@@ -236,7 +235,59 @@
 
        [:tr.total
         [:td
-         {:color "#666"}]]]]]]
+         {:color "#666"}]]]]
+
+     [:&.tower-grade
+      {:margin "1em 0.5em 0.5em"
+       :padding "0.75em 1em"
+       :border-left "3px solid #ecc111"
+       :background "#fff"
+       :display "inline-block"
+       :cursor "default"}
+
+      [:.title
+       {:font-weight "bold"
+        :text-transform "uppercase"
+        :letter-spacing "0.1em"
+        :margin-bottom "0.5em"}]
+
+      [:table
+       {:border-collapse "collapse"}
+
+       [:td
+        {:padding "0.1em 0.5em 0.1em 0"}]
+
+       [:td.grade
+        {:text-align "right"
+         :padding "0.1em 0 0.1em 1.5em"}]
+
+       [:tr.average
+        [:td
+         {:border-top "1px solid #ccc"
+          :font-weight "bold"}]]]]
+
+     [:.grade-badge
+      {:display "inline-block"
+       :min-width "1.5em"
+       :padding "0 0.3em"
+       :margin-left "0.25em"
+       :border-radius "3px"
+       :text-align "center"
+       :font-weight "bold"
+       :color "#fff"
+       :background "#999"}
+
+      [:&.grade-S
+       {:background "#ecc111"}]
+
+      [:&.grade-A :&.grade-B
+       {:background "#11a811"}]
+
+      [:&.grade-C :&.grade-D
+       {:background "#ec8f11"}]
+
+      [:&.grade-F
+       {:background "#da4939"}]]]]
 
    [:.board
     {:display "flex"
