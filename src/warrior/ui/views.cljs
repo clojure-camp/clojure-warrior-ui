@@ -193,13 +193,13 @@
        [:div.title "Level " (:level/id level)]
        [:div.description (:level/description level)]
        (when-let [tip (:level/tip level)]
-         [:div.tip
-          [:span.label "Tip: "]
-          tip])
+         [:details.tip
+          [:summary "Show Tip"]
+          [:div.content tip]])
        (when-let [clue (:level/clue level)]
          [:details.clue
-          [:summary "Show clue"]
-          clue])])
+          [:summary "Show Clue"]
+          [:div.content clue]])])
 
     :message.type/enemy-action
     [:div.message.enemy-action attrs

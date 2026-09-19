@@ -154,17 +154,16 @@
        {:margin-bottom "0.5em"}]
 
       [:.tip
-       {:color "#666"
-        :margin-bottom "0.25em"}
+       {:margin-bottom "0.25em"}]
 
-       [:.label
-        {:font-weight "bold"}]]
-
-      [:.clue
+      [:.tip :.clue
        {:color "#666"}
 
        [:summary
-        {:cursor "pointer"}]]]]]
+        {:cursor "pointer"}]
+
+       [:.content
+        {:margin-top "0.5em"}]]]]]
 
    [:.board
     {:display "flex"
