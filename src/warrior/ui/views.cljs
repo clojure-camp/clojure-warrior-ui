@@ -1,6 +1,7 @@
 (ns warrior.ui.views
   (:require
     [cljs.reader :as edn]
+    [clojure.string :as string]
     [reagent.core :as r]
     [zprint.core :as z]
     [warrior.ui.state :as state]
@@ -70,13 +71,32 @@
            :level/id)
       0))
 
+(defn time-bonus-remaining [state]
+  (max 0 (- (:state/time-bonus state 0)
+            (:state/tick state 0))))
+
+(defn score-badge-view [current-state]
+  [:div.score-badge
+   [:span.item
+    [:span.label "Points"]
+    [:span.value (:state/level-points current-state 0)]]
+   [:span.item
+    [:span.label "Time Bonus"]
+    [:span.value (time-bonus-remaining current-state)]]
+   [:span.item.total
+    [:span.label "Score"]
+    [:span.value (:state/score current-state 0)]]])
+
 (defn navigator-view []
   (let [{:keys [index history playing?]} @state/app-state
         state-count (count history)
         current-state (get history index)
         level-id (current-level-id (:state/messages current-state))]
     [:div.navigator
-     [:div.level-badge "Level " level-id " · Turn " (:state/turn current-state)]
+     [:div.level-badge
+      "Level " [:span.value.level-number level-id]
+      " · Turn " [:span.value.turn-number (:state/turn current-state)]]
+     [score-badge-view current-state]
      [:button {:disabled (= index 0)
                :on-click (fn []
                            (swap! state/app-state update :index dec))} "◀"]
@@ -192,6 +212,8 @@
       [:div.message.level-start attrs
        [:div.title "Level " (:level/id level)]
        [:div.description (:level/description level)]
+       (when-let [ace-score (:level/ace-score level)]
+         [:div.ace-score "Ace score: " ace-score])
        (when-let [tip (:level/tip level)]
          [:details.tip
           [:summary "Show Tip"]
@@ -212,6 +234,28 @@
     [:div.message.system attrs
      (display-text message)]))
 
+(defn level-score-view [score total-score attrs]
+  [:div.message.level-score attrs
+   [:div.title "Level Complete"]
+   [:table
+    [:tbody
+     [:tr
+      [:td "Points"]
+      [:td.value (:score/points score)]]
+     [:tr
+      [:td "Time Bonus"]
+      [:td.value (:score/time-bonus score)]]
+     (when (pos? (:score/clear-bonus score))
+       [:tr
+        [:td "Clear Bonus"]
+        [:td.value (:score/clear-bonus score)]])
+     [:tr.level-total
+      [:td "Level Score"]
+      [:td.value (:score/total score)]]
+     [:tr.total
+      [:td "Total Score"]
+      [:td.value total-score]]]]])
+
 (defn index-for-message [history message-index]
   (->> history
        (keep-indexed (fn [index _state]
@@ -219,10 +263,27 @@
                          index)))
        first))
 
+(def score-tally-text-prefixes
+  ["Level Score:"
+   "Time Bonus:"
+   "Clear Bonus:"
+   "Total Score:"])
+
+;; the engine emits these as plain text alongside the level-score message;
+;; the score card replaces them
+(defn score-tally-text-message? [message]
+  (and
+    (= :message.type/system (:message/type message))
+    (some (fn [prefix]
+            (string/starts-with? (:message/text message "") prefix))
+          score-tally-text-prefixes)))
+
 (defn turn-view [indexed-messages active-index history]
   (let [turn (:message/turn (second (first indexed-messages)))
         log-messages (remove (fn [[_index message]]
-                               (contains? debug-message-types (:message/type message)))
+                               (or
+                                 (contains? debug-message-types (:message/type message))
+                                 (score-tally-text-message? message)))
                              indexed-messages)]
     [:div.turn
      [:div.turn-label
@@ -230,14 +291,20 @@
         turn)]
      [:div.turn-messages
       (for [[index message] log-messages]
-        ^{:key index}
-        [message-view message
-         {:class (cond
-                   (= index active-index) "active"
-                   (> index active-index) "future")
-          :on-click (fn []
-                      (swap! state/app-state assoc :index
-                             (index-for-message history index)))}])]]))
+        (let [attrs {:class (cond
+                              (= index active-index) "active"
+                              (> index active-index) "future")
+                     :on-click (fn []
+                                 (swap! state/app-state assoc :index
+                                        (index-for-message history index)))}]
+          (with-meta
+            (if (= :message.type/level-score (:message/type message))
+              [level-score-view
+               (:message/score message)
+               (get-in history [(index-for-message history index) :state/score])
+               attrs]
+              [message-view message attrs])
+            {:key index})))]]))
 
 (defn scroll-active-message-into-view! [element]
   (when-let [active (some-> element (.querySelector ".message.active"))]

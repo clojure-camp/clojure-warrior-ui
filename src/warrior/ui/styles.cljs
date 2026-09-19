@@ -24,7 +24,47 @@
       :background "blue"
       :border-radius "3px"
       :margin-right "0.5em"
-      :font-family "monospace"}]
+      :font-family "monospace"}
+
+     [:.value
+      {:display "inline-block"
+       :text-align "left"}]
+
+     [:.value.level-number
+      {:min-width "1ch"}]
+
+     [:.value.turn-number
+      {:min-width "3ch"}]]
+
+    [:.score-badge
+     {:display "flex"
+      :gap "0.75em"
+      :padding "0.25em 0.75em"
+      :white-space "nowrap"
+      :color "#e5e6c7"
+      :background "#2b2b2b"
+      :border-radius "3px"
+      :margin-right "0.5em"
+      :font-family "monospace"}
+
+     [:.item
+      {:display "flex"
+       :gap "0.35em"}
+
+      [:.label
+       {:color "#999"}]
+
+      ;; fixed width so the scrubber does not resize as digits change
+      [:.value
+       {:font-weight "bold"
+        :display "inline-block"
+        :min-width "3ch"
+        :text-align "right"}]
+
+      [:&.total
+       [:.value
+        {:min-width "4ch"
+         :color "#ecc111"}]]]]
 
     [:input
      {:flex-basis "100%"}]
@@ -153,6 +193,10 @@
       [:.description
        {:margin-bottom "0.5em"}]
 
+      [:.ace-score
+       {:margin-bottom "0.5em"
+        :color "#666"}]
+
       [:.tip
        {:margin-bottom "0.25em"}]
 
@@ -163,7 +207,39 @@
         {:cursor "pointer"}]
 
        [:.content
-        {:margin-top "0.5em"}]]]]]
+        {:margin-top "0.5em"}]]]
+
+     [:&.level-score
+      {:margin "0.5em 0.5em"
+       :padding "0.75em 1em"
+       :border-left "3px solid #ecc111"
+       :background "#fff"
+       :display "inline-block"}
+
+      [:.title
+       {:font-weight "bold"
+        :text-transform "uppercase"
+        :letter-spacing "0.1em"
+        :margin-bottom "0.5em"}]
+
+      [:table
+       {:border-collapse "collapse"}
+
+       [:td
+        {:padding "0.1em 0.5em 0.1em 0"}]
+
+       [:td.value
+        {:text-align "right"
+         :padding-left "1.5em"}]
+
+       [:tr.level-total
+        [:td
+         {:border-top "1px solid #ccc"
+          :font-weight "bold"}]]
+
+       [:tr.total
+        [:td
+         {:color "#666"}]]]]]]
 
    [:.board
     {:display "flex"
