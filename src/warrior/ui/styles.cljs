@@ -242,8 +242,7 @@
        :padding "0.75em 1em"
        :border-left "3px solid #ecc111"
        :background "#fff"
-       :display "inline-block"
-       :cursor "default"}
+       :display "inline-block"}
 
       [:.title
        {:font-weight "bold"
@@ -260,6 +259,12 @@
        [:td.grade
         {:text-align "right"
          :padding "0.1em 0 0.1em 1.5em"}]
+
+       [:tr.level-link
+        {:cursor "pointer"}
+
+        [:&:hover
+         {:background "#eee"}]]
 
        [:tr.average
         [:td

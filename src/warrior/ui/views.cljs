@@ -243,16 +243,19 @@
 
 (defn level-results [all-messages]
   (:results
-    (reduce (fn [{:keys [level results]} [index message]]
+    (reduce (fn [{:keys [level start-message-index results]} [index message]]
               (case (:message/type message)
                 :message.type/level-start
                 {:level (:message/level message)
+                 :start-message-index index
                  :results results}
 
                 :message.type/level-score
                 {:level level
+                 :start-message-index start-message-index
                  :results (conj results
                                 {:result/message-index index
+                                 :result/start-message-index start-message-index
                                  :result/level-id (:level/id level)
                                  :result/ace-score (:level/ace-score level)
                                  :result/ratio (when (pos? (:level/ace-score level 0))
@@ -260,8 +263,10 @@
                                                     (:level/ace-score level)))})}
 
                 {:level level
+                 :start-message-index start-message-index
                  :results results}))
             {:level nil
+             :start-message-index nil
              :results []}
             (map-indexed vector all-messages))))
 
@@ -366,8 +371,9 @@
       (some? (:state/board current-state))
       (not (:state/game-over? current-state)))))
 
-(defn tower-grade-view [all-messages attrs]
-  (let [results (level-results all-messages)
+(defn tower-grade-view [history attrs]
+  (let [all-messages (get-in history [(dec (count history)) :state/messages])
+        results (level-results all-messages)
         ratios (keep :result/ratio results)
         average (when (seq ratios)
                   (/ (reduce + ratios) (count ratios)))]
@@ -378,7 +384,11 @@
         [:tbody
          (for [result results]
            ^{:key (:result/level-id result)}
-           [:tr
+           [:tr.level-link
+            {:on-click (fn [e]
+                         (.stopPropagation e)
+                         (swap! state/app-state assoc :index
+                                (index-for-message history (:result/start-message-index result))))}
             [:td "Level " (:result/level-id result)]
             [:td.grade [grade-badge-view result]]])
          [:tr.average
@@ -415,9 +425,12 @@
               [:div.turn
                [:div.turn-label]
                [:div.turn-messages
-                [tower-grade-view all-messages
+                [tower-grade-view history
                  {:class (when (< index (dec (count history)))
-                           "future")}]]])]))})))
+                           "future")
+                  :on-click (fn []
+                              (swap! state/app-state assoc :index
+                                     (dec (count history))))}]]])]))})))
 
 (defn board-view [board]
   (into [:div.board]
