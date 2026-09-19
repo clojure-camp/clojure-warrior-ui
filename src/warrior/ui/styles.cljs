@@ -89,10 +89,7 @@
 
     [:.debug-columns
      {:display "flex"
-      :gap "1em"
-      :margin "0.25em 0 0.5em"
       :padding "0.5em"
-      :border-radius "3px"
       :height "20em"
       :overflow-y "auto"}
 
