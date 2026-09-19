@@ -113,6 +113,9 @@
     (catch :default _
       (str text))))
 
+(defn message-count-at-index [history index]
+  (count (get-in history [index :state/messages])))
+
 (def debug-message-types
   #{:message.type/input
     :message.type/say
@@ -136,6 +139,33 @@
       [:div.label "output"]
       (when-let [output (first outputs)]
         [:pre (pr-str (:message/action output))])]]))
+
+(defn active-turn-debug-messages [history index]
+  (let [all-messages (get-in history [(dec (count history)) :state/messages])
+        active-index (dec (message-count-at-index history index))
+        active-turn (:message/turn (get all-messages active-index))]
+    (filter (fn [message]
+              (and
+                (= active-turn (:message/turn message))
+                (contains? debug-message-types (:message/type message))))
+            all-messages)))
+
+(defn debug-view []
+  (r/with-let [debug-open? (r/atom false)]
+    (let [{:keys [history index]} @state/app-state
+          debug-messages (active-turn-debug-messages history index)]
+      [:div.debug
+       [:div.debug-toggle
+        {:class (when (empty? debug-messages) "empty")
+         :on-click (fn []
+                     (swap! debug-open? not))}
+        (if @debug-open?
+          "▾ debug"
+          "▸ debug")]
+       (when (and
+               @debug-open?
+               (seq debug-messages))
+         [debug-columns-view debug-messages])])))
 
 (defn message-view [message attrs]
   (case (:message/type message)
@@ -168,9 +198,6 @@
     [:div.message.system attrs
      (:message/text message)]))
 
-(defn message-count-at-index [history index]
-  (count (get-in history [index :state/messages])))
-
 (defn index-for-message [history message-index]
   (->> history
        (keep-indexed (fn [index _state]
@@ -179,40 +206,24 @@
        first))
 
 (defn turn-view [indexed-messages active-index history]
-  (r/with-let [debug-open? (r/atom false)]
-    (let [turn (:message/turn (second (first indexed-messages)))
-          {debug-messages true
-           log-messages false} (group-by (fn [[_index message]]
-                                           (contains? debug-message-types (:message/type message)))
-                                         indexed-messages)
-          debug-future? (and (seq debug-messages)
-                             (> (first (first debug-messages)) active-index))]
-      [:div.turn
-       (when (or (pos? turn)
-                 (seq debug-messages))
-         [:div.turn-header
-          (when (pos? turn)
-            [:span.turn-label turn])
-          (when (seq debug-messages)
-            [:span.debug-toggle
-             {:class (when debug-future? "future")
-              :on-click (fn []
-                          (swap! debug-open? not))}
-             (if @debug-open?
-               "▾ debug"
-               "▸ debug")])])
-       (when (and @debug-open?
-                  (seq debug-messages))
-         [debug-columns-view (map second debug-messages)])
-       (for [[index message] log-messages]
-         ^{:key index}
-         [message-view message
-          {:class (cond
-                    (= index active-index) "active"
-                    (> index active-index) "future")
-           :on-click (fn []
-                       (swap! state/app-state assoc :index
-                              (index-for-message history index)))}])])))
+  (let [turn (:message/turn (second (first indexed-messages)))
+        log-messages (remove (fn [[_index message]]
+                               (contains? debug-message-types (:message/type message)))
+                             indexed-messages)]
+    [:div.turn
+     [:div.turn-label
+      (when (pos? turn)
+        turn)]
+     [:div.turn-messages
+      (for [[index message] log-messages]
+        ^{:key index}
+        [message-view message
+         {:class (cond
+                   (= index active-index) "active"
+                   (> index active-index) "future")
+          :on-click (fn []
+                      (swap! state/app-state assoc :index
+                             (index-for-message history index)))}])]]))
 
 (defn scroll-active-message-into-view! [element]
   (when-let [active (some-> element (.querySelector ".message.active"))]
@@ -261,6 +272,7 @@
       [:div.level
        [navigator-view]
        [board-view (get-in history [index :state/board])]
+       [debug-view]
        [messages-view]]
       [:div.level])))
 

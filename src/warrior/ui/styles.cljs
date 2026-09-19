@@ -29,6 +29,41 @@
     [:input
      {:flex-basis "100%"}]]
 
+   [:.debug
+    {:font-family "monospace"
+     :padding "0 0.5em"
+     :background "#000"
+     :color "#fff"
+     :font-size "0.8em"}
+
+    [:.debug-toggle
+     {
+      :padding "0.25em 0.5em"
+      :cursor "pointer"}
+
+     [:&.empty
+      {:opacity 0.35}]]
+
+    [:.debug-columns
+     {:display "flex"
+      :gap "1em"
+      :margin "0.25em 0 0.5em"
+      :padding "0.5em"
+      :border-radius "3px"
+      :max-height "40vh"
+      :overflow-y "auto"}
+
+     [:.column
+      {:flex "0 0 auto"}
+
+      [:.label
+       {:color "#999"
+        :margin-bottom "0.25em"}]
+
+      [:pre
+       {:margin "0 0 0.25em"
+        :white-space "pre"}]]]]
+
    [:.messages
     {:overflow-y "auto"
      :overflow-x "auto"
@@ -38,55 +73,36 @@
      :padding "0.5em"}
 
     [:.turn
-     {:margin-top "0.75em"
-      :padding-top "0.25em"
+     {:display "flex"
+      :margin-top "0.5em"
+      :padding-top "0.5em"
       :border-top "1px solid #ccc"}
 
-     [:.turn-header
-      {:display "flex"
-       :gap "1em"
+     [:.turn-label
+      {:flex "0 0 3em"
+       :line-height "1.25em"
        :padding "0 0.5em"
-       :margin-bottom "0.5em"
-       :font-size "0.8em"
-       :color "#999"}
+       :text-align "right"
+       :color "#999"}]
 
-      [:.debug-toggle
-       {:color "#666"
-        :cursor "pointer"}
-
-       [:&.future
-        {:opacity 0.35}]]]
-
-     [:.debug-columns
-      {:display "flex"
-       :gap "1em"
-       :margin "0.25em 0.5em 0.5em"
-       :padding "0.5em"
-       :border-radius "3px"
-       :color "#fff"
-       :background "#000"
-       :overflow-x "auto"}
-
-      [:.column
-       {:flex "0 0 auto"}
-
-       [:.label
-        {:color "#999"
-         :font-size "0.8em"
-         :margin-bottom "0.25em"}]
-
-       [:pre
-        {:margin "0 0 0.25em"
-         :white-space "pre"}]]]]
+     [:.turn-messages
+      {:flex "1 1 auto"
+       :min-width 0}]]
 
     [:.message
-     {:line-height "1.25em"
+     {:position "relative"
+      :line-height "1.25em"
       :padding "0 0.5em"
       :cursor "pointer"}
 
-     [:&.active
-      {:outline "2px solid blue"
-       :outline-offset "0px"}]
+     ["&.active::before"
+      {:content "\"\\25C6\""
+       :position "absolute"
+       :left "-0.3em"
+       :top 0
+       :font-size "0.6em"
+       :line-height "2.1em"
+       :color "blue"}]
 
      [:&.future
       {:opacity 0.35}]
@@ -148,7 +164,7 @@
 
    [:.board
     {:display "flex"
-     :background "black"
+     :background "#555"
      :height "64px"}
 
     [:.space
