@@ -172,6 +172,15 @@
                (seq debug-messages))
          [debug-columns-view debug-messages])])))
 
+(def message-text-overrides
+  {"You have reached the top of the tower"
+   "Congratulations, you have escaped!"})
+
+(defn display-text [message]
+  (get message-text-overrides
+       (:message/text message)
+       (:message/text message)))
+
 (defn message-view [message attrs]
   (case (:message/type message)
     :message.type/say
@@ -201,7 +210,7 @@
      (:message/text message)]
 
     [:div.message.system attrs
-     (:message/text message)]))
+     (display-text message)]))
 
 (defn index-for-message [history message-index]
   (->> history
@@ -271,12 +280,26 @@
                   [:div.space
                    [entity-view entity]])))))
 
+(defn escaped-view []
+  [:div.board.escaped
+   [:div.space
+    [entity-view {:unit/type :unit.type/warrior}]]])
+
+(defn escaped? [history index]
+  (let [current-state (get history index)]
+    (and
+      (= index (dec (count history)))
+      (some? (:state/board current-state))
+      (not (:state/game-over? current-state)))))
+
 (defn level-view []
   (let [{:keys [history index]} @state/app-state]
     (if (seq history)
       [:div.level
        [navigator-view]
-       [board-view (get-in history [index :state/board])]
+       (if (escaped? history index)
+         [escaped-view]
+         [board-view (get-in history [index :state/board])])
        [debug-view]
        [messages-view]]
       [:div.level])))

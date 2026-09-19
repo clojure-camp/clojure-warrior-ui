@@ -15,9 +15,18 @@
                                              (str error)))
                       :message/turn 0}]}])
 
+;; the engine's first state ("You enter the tower") has no board,
+;; and its message is carried into every later state
+(defn without-opening-state [history]
+  (->> history
+       rest
+       (mapv (fn [state]
+               (update state :state/messages (fn [messages]
+                                               (vec (rest messages))))))))
+
 (defn run-bot! []
   (let [history (try
-                  (vec (play/play-levels levels/levels bot/play-turn))
+                  (without-opening-state (play/play-levels levels/levels bot/play-turn))
                   (catch :default error
                     (js/console.error error)
                     (error-history error)))]

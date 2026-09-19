@@ -168,8 +168,20 @@
 
    [:.board
     {:display "flex"
+     :flex-shrink 0
      :background "#555"
      :height "64px"}
+
+    [:&.escaped
+     {:background-image "url(./sprites/escaped_bg.png)"
+      :background-repeat "repeat"
+      :background-position "center bottom"
+      :justify-content "flex-start"
+      :align-items "flex-end"}
+
+     [:.space
+      {:margin-left "64px"
+       :background-image "none"}]]
 
     [:.space
      {:display "inline-block"
