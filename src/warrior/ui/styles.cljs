@@ -53,7 +53,7 @@
       :margin "0.25em 0 0.5em"
       :padding "0.5em"
       :border-radius "3px"
-      :max-height "40vh"
+      :height "20em"
       :overflow-y "auto"}
 
      [:.column
