@@ -1,6 +1,7 @@
 (ns warrior.ui.styles
   (:require
-    [garden.core :as garden]))
+    [garden.core :as garden]
+    [garden.stylesheet :as stylesheet]))
 
 (defn level-styles []
   [:.level
@@ -389,10 +390,65 @@
      {:display "flex"
       :height "100vh"}]]])
 
+(defn dark-styles []
+  (stylesheet/at-media {:prefers-color-scheme "dark"}
+    [:body
+     {:color-scheme "dark"
+      :color "#abb2bf"}
+
+     [:#app
+      {:background "#1e2127"}]]
+
+    [:.level
+     [:.navigator
+      [:.level-badge
+       {:background "#3d5afe"}]]
+
+     [:.messages
+      [:.turn
+       {:border-top-color "#3a3f4b"}
+
+       [:.turn-label
+        {:color "#7f848e"}]]
+
+      [:.message
+       ["&.active::before"
+        {:color "#61afef"}]
+
+       [:&.enemy-action
+        {:color "#e06c75"}]
+
+       [:&.say
+        {:background "#353b45"}]
+
+       [:&.level-start
+        {:border-left-color "#61afef"
+         :background "#282c34"}
+
+        [:.tip :.clue
+         {:color "#9da5b4"}]]
+
+       [:&.level-score :&.tower-grade
+        {:background "#282c34"}
+
+        [:table
+         [:tr.level-total :tr.average
+          [:td
+           {:border-top-color "#3a3f4b"}]]
+
+         [:tr.total
+          [:td
+           {:color "#9da5b4"}]]
+
+         [:tr.level-link
+          [:&:hover
+           {:background "#3a3f4b"}]]]]]]]))
+
 (defn styles-view []
   [:style
    {:type "text/css"
     :dangerouslySetInnerHTML
     {:__html (garden/css
                (main-styles)
-               (level-styles))}}])
+               (level-styles)
+               (dark-styles))}}])

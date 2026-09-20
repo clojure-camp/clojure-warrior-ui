@@ -90,5 +90,6 @@
     {:__html (garden/css
                (ui-styles/main-styles)
                (ui-styles/level-styles)
+               (ui-styles/dark-styles)
                (editor-styles)
                (editor-dark-styles))}}])
