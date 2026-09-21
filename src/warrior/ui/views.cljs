@@ -75,8 +75,14 @@
   (max 0 (- (:state/time-bonus state 0)
             (:state/tick state 0))))
 
-(defn score-badge-view [current-state]
-  [:div.score-badge
+(defn stats-view [current-state]
+  [:div.stats
+   [:span.item
+    [:span.label "Level"]
+    [:span.value.level-number (current-level-id (:state/messages current-state))]]
+   [:span.item
+    [:span.label "Turn"]
+    [:span.value.turn-number (:state/turn current-state)]]
    [:span.item
     [:span.label "Points"]
     [:span.value (:state/level-points current-state 0)]]
@@ -89,14 +95,8 @@
 
 (defn navigator-view []
   (let [{:keys [index history playing?]} @state/app-state
-        state-count (count history)
-        current-state (get history index)
-        level-id (current-level-id (:state/messages current-state))]
+        state-count (count history)]
     [:div.navigator
-     [:div.level-badge
-      "Level " [:span.value.level-number level-id]
-      " · Turn " [:span.value.turn-number (:state/turn current-state)]]
-     [score-badge-view current-state]
      [:button {:disabled (= index 0)
                :on-click (fn []
                            (swap! state/app-state update :index dec))} "◀"]
@@ -155,7 +155,7 @@
       [:div.label "input"]
       [:pre (format-edn (:message/board (first inputs)))]]
      (when (seq says)
-       [:div.column
+       [:div.column.say
         [:div.label "say"]
         (for [[index say] (map-indexed vector says)]
           ^{:key index}
@@ -175,18 +175,21 @@
                 (contains? debug-message-types (:message/type message))))
             all-messages)))
 
-(defn debug-view []
+(defn status-view []
   (r/with-let [debug-open? (r/atom false)]
     (let [{:keys [history index]} @state/app-state
+          current-state (get history index)
           debug-messages (active-turn-debug-messages history index)]
-      [:div.debug
-       [:div.debug-toggle
-        {:class (when (empty? debug-messages) "empty")
-         :on-click (fn []
-                     (swap! debug-open? not))}
-        (if @debug-open?
-          "▾ debug"
-          "▸ debug")]
+      [:div.status
+       [:div.status-bar
+        [stats-view current-state]
+        [:div.debug-toggle
+         {:class (when (empty? debug-messages) "empty")
+          :on-click (fn []
+                      (swap! debug-open? not))}
+         (if @debug-open?
+           "▾ debug"
+           "▸ debug")]]
        (when (and
                @debug-open?
                (seq debug-messages))
@@ -455,7 +458,7 @@
        (if (escaped? history index)
          [escaped-view]
          [board-view (get-in history [index :state/board])])
-       [debug-view]
+       [status-view]
        [messages-view]]
       [:div.level])))
 

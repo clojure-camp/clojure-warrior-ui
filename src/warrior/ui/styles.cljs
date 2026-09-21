@@ -3,10 +3,49 @@
     [garden.core :as garden]
     [garden.stylesheet :as stylesheet]))
 
+(def monospace "ui-monospace, 'Cascadia Code', 'Fira Code', monospace")
+
+(def toolbar-height "34px")
+
+(def button-styles
+  [:button
+   {:font-family monospace
+    :font-size "13px"
+    :line-height 1
+    :padding "0.5em 0.9em"
+    :color "#2b2b2b"
+    :background "#fff"
+    :border "1px solid #ccc"
+    :border-radius "3px"
+    :cursor "pointer"}
+
+   ["&:hover:not(:disabled)"
+    {:background "#eee"}]
+
+   ["&:active:not(:disabled)"
+    {:background "#ddd"}]
+
+   [:&:disabled
+    {:opacity 0.35
+     :cursor "default"}]])
+
+(def dark-button-styles
+  [:button
+   {:color "#abb2bf"
+    :background "#3a3f4b"
+    :border-color "#181a1f"}
+
+   ["&:hover:not(:disabled)"
+    {:background "#454b57"}]
+
+   ["&:active:not(:disabled)"
+    {:background "#2f333d"}]])
+
 (defn level-styles []
   [:.level
    {:display "flex"
     :flex-direction "column"
+    :font-size "13px"
     :height "100vh"
     :min-width (str (* 11 64) "px")
     :max-width (str (* 11 64) "px")
@@ -15,86 +54,94 @@
    [:.navigator
     {:display "flex"
      :align-items "center"
-     :min-height "2em"}
+     :box-sizing "border-box"
+     :height toolbar-height
+     :padding "0 0.5em"
+     :background "#000"
+     :color "#fff"}
 
-    [:.level-badge
-     {:padding "0.25em 0.75em"
-      :font-weight "bold"
-      :white-space "nowrap"
-      :color "#e5e6c7"
-      :background "blue"
-      :border-radius "3px"
-      :margin-right "0.5em"
-      :font-family "monospace"}
-
-     [:.value
-      {:display "inline-block"
-       :text-align "left"}]
-
-     [:.value.level-number
-      {:min-width "1ch"}]
-
-     [:.value.turn-number
-      {:min-width "3ch"}]]
-
-    [:.score-badge
-     {:display "flex"
-      :gap "0.75em"
-      :padding "0.25em 0.75em"
-      :white-space "nowrap"
-      :color "#e5e6c7"
-      :background "#2b2b2b"
-      :border-radius "3px"
-      :margin-right "0.5em"
-      :font-family "monospace"}
-
-     [:.item
-      {:display "flex"
-       :gap "0.35em"}
-
-      [:.label
-       {:color "#999"}]
-
-      ;; fixed width so the scrubber does not resize as digits change
-      [:.value
-       {:font-weight "bold"
-        :display "inline-block"
-        :min-width "3ch"
-        :text-align "right"}]
-
-      [:&.total
-       [:.value
-        {:min-width "4ch"
-         :color "#ecc111"}]]]]
+    button-styles
+    dark-button-styles
 
     [:input
-     {:flex-basis "100%"}]
+     {:flex-basis "100%"
+      :margin "0 0.35em"
+      :color-scheme "dark"
+      :accent-color "#3d5afe"}]
 
     [:.play-toggle
      {:margin-left "0.5em"}]]
 
-   [:.debug
-    {:font-family "monospace"
-     :padding "0 0.5em"
+   [:.status
+    {:font-family monospace
      :background "#000"
-     :color "#fff"
-     :font-size "0.8em"}
+     :color "#fff"}
 
-    [:.debug-toggle
-     {:padding "0.25em 0.5em"
-      :cursor "pointer"}
+    [:.status-bar
+     {:display "flex"
+      :align-items "center"
+      :gap "0.5em"
+      :padding "0.25em 0.5em"}
 
-     [:&.empty
-      {:opacity 0.35}]]
+     [:.stats
+      {:display "flex"
+       :gap "0.35em"
+       :padding "0.25em 0.75em"
+       :white-space "nowrap"
+       :color "#e5e6c7"
+       :font-family monospace}
+
+      [".item + .item::before"
+       {:content "\"\\00b7\""
+        :color "#666"}]
+
+      [:.item
+       {:display "flex"
+        :gap "0.35em"}
+
+       [:.label
+        {:color "#999"}]
+
+       ;; fixed width so the values do not shift as digits change
+       [:.value
+        {:font-weight "bold"
+         :display "inline-block"
+         :min-width "3ch"
+         :text-align "right"}]
+
+       [:.value.level-number
+        {:min-width "1ch"}]
+
+       [:&.total
+        [:.value
+         {:min-width "4ch"
+          :color "#ecc111"}]]]]
+
+     [:.debug-toggle
+      {:margin-left "auto"
+       :padding "0.25em 0.5em"
+       :font-size "0.9em"
+       :cursor "pointer"}
+
+      [:&.empty
+       {:opacity 0.35}]]]
 
     [:.debug-columns
      {:display "flex"
+      :gap "0.75em"
       :padding "0.5em"
       :height "20em"
+      :font-size "0.9em"
       :overflow-y "auto"}
 
      [:.column
       {:flex "0 0 auto"}
+
+      [:&.say
+       {:padding "0.25em 0.5em"
+        :margin "-0.25em 0"
+        :background "#1f1f1f"
+        :border-radius "3px"}]
 
       [:.label
        {:color "#999"
@@ -107,7 +154,7 @@
    [:.messages
     {:overflow-y "auto"
      :overflow-x "auto"
-     :font-family "monospace"
+     :font-family monospace
      :flex-basis "50%"
      :flex-grow 2
      :padding "0.5em"}
@@ -400,10 +447,6 @@
       {:background "#1e2127"}]]
 
     [:.level
-     [:.navigator
-      [:.level-badge
-       {:background "#3d5afe"}]]
-
      [:.messages
       [:.turn
        {:border-top-color "#3a3f4b"}

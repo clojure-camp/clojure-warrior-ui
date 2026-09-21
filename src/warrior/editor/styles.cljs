@@ -4,8 +4,6 @@
     [garden.stylesheet :as stylesheet]
     [warrior.ui.styles :as ui-styles]))
 
-(def monospace "ui-monospace, 'Cascadia Code', 'Fira Code', monospace")
-
 (defn editor-styles []
   [:.editor-panel
    {:display "flex"
@@ -20,26 +18,38 @@
     {:display "flex"
      :gap "0.5em"
      :align-items "center"
-     :padding "0.5em"
+     :box-sizing "border-box"
+     :height ui-styles/toolbar-height
+     :padding "0 0.5em"
      :border-bottom "1px solid #ddd"}
 
-    [:button
-     {:padding "0.4em 0.9em"
-      :cursor "pointer"}]
+    ui-styles/button-styles
 
     [:.run
-     {:font-weight "bold"}]
+     {:font-weight "bold"
+      :color "#fff"
+      :background "blue"
+      :border-color "blue"}
+
+     ["&:hover:not(:disabled)"
+      {:background "#3d5afe"
+       :border-color "#3d5afe"}]
+
+     ["&:active:not(:disabled)"
+      {:background "#2a3eb1"
+       :border-color "#2a3eb1"}]]
 
     [:.hint
      {:margin-left "auto"
       :color "#888"
+      :font-family ui-styles/monospace
       :font-size "0.85em"}]]
 
    [:.error
     {:padding "0.5em 0.75em"
      :background "#fde8e8"
      :color "#a00"
-     :font-family monospace
+     :font-family ui-styles/monospace
      :font-size "0.85em"
      :white-space "pre-wrap"}]
 
@@ -56,7 +66,7 @@
 
     [:.cm-content
      {:padding "8px"
-      :font-family monospace
+      :font-family ui-styles/monospace
       :font-size "13px"
       :line-height "1.6"}]]])
 
@@ -70,11 +80,20 @@
      [:.toolbar
       {:border-bottom-color "#181a1f"}
 
-      [:button
-       {:background "#3a3f4b"
-        :color "#abb2bf"
-        :border "1px solid #181a1f"
-        :border-radius "3px"}]
+      ui-styles/dark-button-styles
+
+      [:.run
+       {:color "#fff"
+        :background "#3d5afe"
+        :border-color "#3d5afe"}
+
+       ["&:hover:not(:disabled)"
+        {:background "#5b72fe"
+         :border-color "#5b72fe"}]
+
+       ["&:active:not(:disabled)"
+        {:background "#2a3eb1"
+         :border-color "#2a3eb1"}]]
 
       [:.hint
        {:color "#7f848e"}]]
