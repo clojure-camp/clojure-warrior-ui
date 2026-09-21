@@ -43,7 +43,17 @@
      {:margin-left "auto"
       :color "#888"
       :font-family ui-styles/monospace
-      :font-size "0.85em"}]]
+      :font-size "0.85em"}]
+
+    [:.help
+     {:color "#888"
+      :font-family ui-styles/monospace
+      :font-size "0.85em"}
+
+     ["&::before"
+      {:content "\"·\""
+       :display "inline-block"
+       :margin-right "0.5em"}]]]
 
    [:.error
     {:padding "0.5em 0.75em"
@@ -96,6 +106,9 @@
          :border-color "#2a3eb1"}]]
 
       [:.hint
+       {:color "#7f848e"}]
+
+      [:.help
        {:color "#7f848e"}]]
 
      [:.error

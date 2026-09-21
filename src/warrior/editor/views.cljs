@@ -106,7 +106,11 @@
       [:button {:on-click (fn []
                             (editor-state/share!))}
        "Share"]
-      [:span.hint "Cmd/Ctrl-Enter to run · Tab to format"]]
+      [:span.hint "Cmd/Ctrl-Enter to run · Tab to format"]
+      [:a.help {:href "https://github.com/clojure-camp/clojure-warrior-ui#how-to-play"
+                :target "_blank"
+                :rel "noopener noreferrer"}
+       "How to Play"]]
      (when error
        [:div.error error])
      [code-editor {:value code
