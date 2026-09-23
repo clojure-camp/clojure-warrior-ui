@@ -1,5 +1,6 @@
 (ns warrior.ui.game
   (:require
+    [clojure.string :as string]
     [clojure-warrior.levels :as levels]
     [clojure-warrior.play :as play]
     [warrior.ui.state :as state]))
@@ -21,9 +22,26 @@
                (update state :state/messages (fn [messages]
                                                (vec (rest messages))))))))
 
+(def todo-error-prefix
+  (str "Invalid action " (pr-str [:TODO])))
+
+(defn with-todo-hint [message]
+  (if (and (= :message.type/error (:message/type message))
+           (string/starts-with? (str (:message/text message)) todo-error-prefix))
+    (assoc message :message/text "Edit play-turn to return a valid action.")
+    message))
+
+(defn with-todo-hints [history]
+  (mapv (fn [state]
+          (update state :state/messages (fn [messages]
+                                          (mapv with-todo-hint messages))))
+        history))
+
 (defn run-bot! [play-turn]
   (let [history (try
-                  (without-opening-state (play/play-levels levels/levels play-turn))
+                  (->> (play/play-levels levels/levels play-turn {:check-abilities? false})
+                       without-opening-state
+                       with-todo-hints)
                   (catch :default error
                     (js/console.error error)
                     (error-history error)))]
