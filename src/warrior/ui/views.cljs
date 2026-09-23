@@ -216,9 +216,7 @@
        [:div.title "Level " (:level/id level)]
        [:div.description (:level/description level)]
        (when-let [tip (:level/tip level)]
-         [:details.tip
-          [:summary "Show Tip"]
-          [:div.content tip]])
+         [:div.tip "Tip: " tip])
        (when-let [clue (:level/clue level)]
          [:details.clue
           [:summary "Show Clue"]
