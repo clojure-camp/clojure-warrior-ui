@@ -4,7 +4,7 @@
   "scripts": {
     "start": "shadow-cljs watch app",
     "dev": "shadow-cljs -A:dev watch app",
-    "editor": "shadow-cljs watch editor",
+    "editor": "shadow-cljs -A:dev watch editor",
     "release:editor": "shadow-cljs release editor"
   },
   "devDependencies": {
