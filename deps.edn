@@ -4,7 +4,7 @@
         garden/garden {:mvn/version "1.3.10"}
         zprint/zprint {:mvn/version "1.3.0"}
         org.babashka/sci {:mvn/version "0.12.51"}
-        io.github.clojure-camp/clojure-warrior {:git/sha "81f13a0eead7ce3ad62ad6ab1bcc234c5a9ae9cf"}}
+        io.github.clojure-camp/clojure-warrior {:git/sha "686b4f0dfe7e51db3579293f65ce74138cbd6aef"}}
  :aliases {:dev {:extra-paths ["dev-src"]
                  :override-deps {io.github.clojure-camp/clojure-warrior
                                  {:local/root "checkouts/clojure-warrior"}}}}}
